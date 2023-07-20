@@ -24,9 +24,9 @@ fi
 
 typeset -U path cdpath
 
-path+=(~/bin(N-/))
+path+=( ~/bin(N-/) ~/.cargo/bin(N-/) ~/.go/bin(N-/) )
 
-cdpath+=(~ ~/src(N-/) ~/GitHub(N-/))
+cdpath+=( ~ ~/src(N-/) ~/GitHub(N-/) ~/Projects(N-/) )
 
 # }}}
 
@@ -54,12 +54,19 @@ znap source zsh-users/zsh-syntax-highlighting
 # }}}
 
 # {{{ prezto
+
 znap source sorin-ionescu/prezto modules/{command-not-found,completion}
+
+# }}}
+
+# {{{ prompt
 
 export PURE_PROMPT_SYMBOL='›'
 export PURE_PROMPT_VICMD_SYMBOL='‹'
 
-znap source sindresorhus/pure async.zsh pure.zsh
+# znap source kur-11/pure async.zsh pure.zsh
+. ~/GitHub/pure/async.zsh
+. ~/GitHub/pure/pure.zsh
 
 # }}}
 
@@ -172,6 +179,8 @@ alias relogin='exec $SHELL -l'
 
 # {{{ functions
 
+ipv4() { curl -fsS https://api.ipify.org; echo }
+ipv6() { curl -fsS https://api64.ipify.org; echo }
 mkcd() { install -Ddv "$1" && cd "$1" }
 
 urlencode() {
@@ -252,6 +261,12 @@ alias grep='grep --color=auto'
 
 # }}}
 
+# {{{ go
+
+export GOPATH=$HOME/.go
+
+# }}}
+
 # {{{ zcompile and load .local
 
 setopt NULL_GLOB
@@ -273,14 +288,5 @@ zcompile-if-needed ~/.zshrc
         shift
     done
 } ~/.zshrc.*~*.zwc~*\~
-
-# }}}
-
-# {{{
-
-# export PURE_PROMPT_SYMBOL='›'
-# export PURE_PROMPT_VICMD_SYMBOL='‹'
-
-# znap source sindresorhus/pure async.zsh pure.zsh
 
 # }}}
