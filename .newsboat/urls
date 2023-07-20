@@ -1,0 +1,18 @@
+https://dyn.keepa.com/v2/user/rss/?feed=1a2u21o19t7v7ct94hr4590rsup81s91
+
+https://cat-press.com/feed
+
+https://note.com/tuguhito/rss note
+
+https://reddit.com/r/unixporn/.rss reddit
+https://reddit.com/r/commandline/.rss reddit
+
+https://srad.jp/sradjp.rss
+https://srad.jp/developers.rss
+https://srad.jp/opensource.rss
+https://srad.jp/security.rss
+
+# "exec:~/.newsboat/youtube.sh " youtube
+"exec:~/.newsboat/youtube.sh https://www.youtube.com/@hashimoto-kyomei" youtube
+"exec:~/.newsboat/youtube.sh https://www.youtube.com/@Yurindo_YouTube" youtube
+"exec:~/.newsboat/youtube.sh https://www.youtube.com/@gaijinrider6325" youtube narazumono

@@ -1,0 +1,7 @@
+auto-reload yes
+max-items 30
+show-read-feeds no
+show-read-articles no
+refresh-on-startup yes
+confirm-exit yes
+browser ~/.newsboat/browser.sh
