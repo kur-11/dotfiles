@@ -22,11 +22,19 @@ fi
 
 # {{{ environment variables
 
-typeset -U path cdpath
+typeset -U path cdpath fpath
 
-path+=( ~/bin(N-/) ~/.cargo/bin(N-/) ~/.go/bin(N-/) )
+() {
+    local path_helper=/usr/libexec/path_helper
+    [[ -x $path_helper ]] && eval "$($path_helper)"
+    (( $+commands[brew] )) && path=( $(brew --prefix coreutils 2>/dev/null)/libexec/gnubin(N-/) $path )
+}
 
-cdpath+=( ~ ~/src(N-/) ~/GitHub(N-/) ~/Projects(N-/) )
+path=( ~/bin(N-/) ~/.cargo/bin(N-/) ~/.go/bin(N-/) $path )
+
+cdpath=( ~ ~/src(N-/) ~/GitHub(N-/) ~/Projects(N-/) $cdpath )
+
+fpath=( /usr/local/share/zsh/site-functions(N-/) $fpath )
 
 # }}}
 
@@ -40,6 +48,11 @@ cdpath+=( ~ ~/src(N-/) ~/GitHub(N-/) ~/Projects(N-/) )
     . $znap_home/znap.zsh
 
     zstyle ':znap:*' repos-dir $znap_home/repos
+}
+
+znapcomp() {
+    znap function {_,}$1 "$2"
+    compctl {_,}$1
 }
 
 # }}}
@@ -59,25 +72,30 @@ znap source sorin-ionescu/prezto modules/{command-not-found,completion}
 
 # }}}
 
+# {{{ asdf
+
+znap source asdf-vm/asdf asdf.sh
+
+() {
+    local v
+    zstyle -g v ':znap:*' repos-dir
+    fpath+=($v/asdf-vm/asdf/completions(N-/))
+}
+
+() {
+    local rc=$HOME/.config/asdf-direnv/zshrc
+    [[ ! -f $rc ]] && asdf direnv setup --shell zsh --version latest
+    . $rc
+}
+
+# }}}
+
 # {{{ prompt
 
 export PURE_PROMPT_SYMBOL='›'
 export PURE_PROMPT_VICMD_SYMBOL='‹'
 
-# znap source kur-11/pure async.zsh pure.zsh
-. ~/GitHub/pure/async.zsh
-. ~/GitHub/pure/pure.zsh
-
-# }}}
-
-# {{{ ostype
-
-is_linux=0 is_osx=0
-
-case $OSTYPE in
-    linux*)  is_linux=1 ;;
-    darwin*) is_osx=1 ;;
-esac
+znap source kur-11/pure async.zsh pure.zsh
 
 # }}}
 
@@ -205,43 +223,36 @@ wq() {
     zparseopts -D -A opthash -- s: t: p: W w o:
 
     local s
-    if (( $+opthash[-s] )); then
-        s="$opthash[-s]"
-    fi
+    (( $+opthash[-s] )) && s="$opthash[-s]"
     [[ -z "$s" ]] && return 10
 
     local t=WPA
-    if (( $+opthash[-t] )); then
-        t="$opthash[-t]"
-    fi
+    (( $+opthash[-t] )) && t="$opthash[-t]"
     [[ "$t" != WPA && "$t" != WEP ]] && return 11
 
-    if (( $+opthash[-W] )); then
-        t=WPA
-    fi
-
-    if (( $+opthash[-w] )); then
-        t=WEP
-    fi
-
+    (( $+opthash[-W] )) && t=WPA
+    (( $+opthash[-w] )) && t=WEP
     if (( $+opthash[-p] )); then
         p="$opthash[-p]"
         [[ "$p" == - ]] && read -s p
     fi
 
     local opt=(-lH)
-    if (( $+opthash[-o] )); then
-        opt+=(-o"$opthash[-o]")
-    else
-        opt+=(-tANSI)
-    fi
+    (( $+opthash[-o] )) \
+        && opt+=(-o"$opthash[-o]") \
+        || opt+=(-tANSI)
 
     qrencode "$opt[@]"  "WIFI:S:$s;T:$t;P:$p;;"
 }
 
+yt-feed() {
+    curl -fsS "$1" | pup 'link[rel="canonical"] attr{href}' \
+        | sed -e 's/^.*\/\([^/]*\)$/\1/' | xargs -r printf 'https://www.youtube.com/feeds/videos.xml?channel_id=%s\n'
+}
+
 # }}}
 
-# {{{ emacs
+# {{{ emcs
 
 if (( $+commands[emacsclient] )); then
     alias emacs='emacsclient -t'
@@ -251,19 +262,50 @@ fi
 
 # {{{ coreutils
 
-alias ls='ls -Xv --color=auto --group-directories-first'
+alias ls="ls -Xv --color=auto --group-directories-first"
 
 # }}}
 
 # {{{ grep
 
-alias grep='grep --color=auto'
+alias grep="grep --color=auto"
 
 # }}}
 
 # {{{ go
 
 export GOPATH=$HOME/.go
+
+# }}}
+
+# {{{
+
+# }}}
+
+# {{{ ssh-agent
+
+pgrep -u "$USR" ssh-agent > /dev/null \
+    || eval "$(ssh-agent)" > /dev/null
+
+# }}}
+
+# {{{
+
+if (( $+commands[trivy] )); then
+    znapcomp trivy 'eval "$(trivy completion zsh)"'
+fi
+
+if (( $+commands[grype] )); then
+    znapcomp grype 'eval "$(grype completion zsh)"'
+fi
+
+if (( $+commands[syft] )); then
+    znapcomp syft 'eval "$(syft completion zsh)"'
+fi
+
+if (( $+commands[gibo] )); then
+    znapcomp gibo 'eval "$(gibo completion zsh)"'
+fi
 
 # }}}
 
@@ -288,5 +330,13 @@ zcompile-if-needed ~/.zshrc
         shift
     done
 } ~/.zshrc.*~*.zwc~*\~
+
+# }}}
+
+
+
+# {{{ yubikey
+
+path+=(/Applications/YubiKey\ Manager.app/Contents/MacOS(N-/))
 
 # }}}
